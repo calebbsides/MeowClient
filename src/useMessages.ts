@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { usePosts } from './PostContext';
 
 export type Message = { text: string; role: 'user' | 'model' };
 
 export function useMessages() {
-    const [messages, setMessages] = useState<Message[]>([{ text: 'What are we posting next?', role: 'model' }]);
+    const [messages, setMessages] = useState<Message[]>([{ text: 'What would you like to post?', role: 'model' }]);
+    const { initPosts } = usePosts();
 
     const { mutate, status } = useMutation({
         mutationFn: async (message: string) => {
@@ -21,13 +23,12 @@ export function useMessages() {
 
             return res.json();
         },
-        onSuccess: (message: Message) => {
-            if (message) {
-                setMessages(prev => [...prev, message]);
-            }
+        onSuccess: (response: any) => {
+            console.log(response)
+            initPosts(response);
         },
         onError: () => {
-            setMessages(prev => [...prev, { text: 'Sorry, there was an error contacting the assistant.', role: 'model' }]);
+            // hande error silently for now
         }
     });
 
